@@ -1,0 +1,22 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "fproduct-manager-4327",
+          "appId": "1:531212876405:android:2970f5ec7dcc55afb2d63c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "fproduct-manager-4327",
+          "configurations": {
+            "android": "1:531212876405:android:2970f5ec7dcc55afb2d63c",
+            "web": "1:531212876405:web:4085c3df626d1eb4b2d63c"
+          }
+        }
+      }
+    }
+  }
+}

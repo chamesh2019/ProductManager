@@ -1,0 +1,92 @@
+name: "Build & Release"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for all tags and branches
+
+      - name: Set Up Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: "oracle"
+          java-version: "21"
+
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          channel: stable
+          version: latest 
+
+      - name: Generate Version from Tags
+        id: generate_version
+        run: |
+          # Get the latest tag, if no tags exist, start with 1.0.0
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          
+          # Remove 'v' prefix if present
+          version_number=${latest_tag#v}
+          
+          # Get commit count since the latest tag
+          commit_count=$(git rev-list --count ${latest_tag}..HEAD 2>/dev/null || echo "0")
+          
+          # If there are commits since the tag, increment patch version
+          if [ "$commit_count" -gt 0 ]; then
+            IFS='.' read -r major minor patch <<< "$version_number"
+            patch=$((patch + 1))
+            new_version="$major.$minor.$patch"
+          else
+            new_version="$version_number"
+          fi
+          
+          echo "Generated version: $new_version"
+          echo "VERSION=$new_version" >> $GITHUB_ENV
+          echo "version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Update pubspec.yaml version
+        run: |
+          # Update the version in pubspec.yaml
+          sed -i "s/^version: .*/version: ${{ steps.generate_version.outputs.version }}/" pubspec.yaml
+          echo "Updated pubspec.yaml version to ${{ steps.generate_version.outputs.version }}"
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Releases
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+        
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+            artifacts: "build/app/outputs/flutter-apk/app-release.apk"
+            tag: v${{ steps.generate_version.outputs.version }}
+            name: "Release v${{ steps.generate_version.outputs.version }}"
+            generateReleaseNotes: true
+            
+
