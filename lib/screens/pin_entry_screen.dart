@@ -100,7 +100,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
               SizedBox(height: screenHeight * 0.03),
 
               // Number pad
-              Container(
+              SizedBox(
                 height: 260,
                 child: NumberPad(
                   onNumberPressed: _onNumberPressed,
