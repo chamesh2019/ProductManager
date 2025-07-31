@@ -75,6 +75,13 @@ jobs:
         run: |
           dart pub global activate flutterfire_cli
 
+      - name: Setup Google Cloud credentials
+        run: |
+          # Create the credentials file from the secret
+          echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}' > $HOME/gcloud-service-key.json
+          # Set the environment variable to point to the credentials file
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json" >> $GITHUB_ENV
+
       - name: Generate firebase config files
         run: |
           # Configure Firebase using FlutterFire CLI
@@ -82,8 +89,6 @@ jobs:
             --project=${{ secrets.FIREBASE_PROJECT_ID }} \
             --yes \
             --platforms=android,web
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
 
       - name: Build APK
         run: flutter build apk --release
