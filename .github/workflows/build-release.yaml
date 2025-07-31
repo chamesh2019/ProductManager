@@ -82,11 +82,6 @@ jobs:
           # Set the environment variable to point to the credentials file
           echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json" >> $GITHUB_ENV
 
-      - name: Authenticate Firebase CLI
-        run: |
-          # Authenticate Firebase CLI with service account
-          firebase auth:login --service-account $HOME/gcloud-service-key.json
-
       - name: Generate firebase config files
         run: |
           # Configure Firebase using FlutterFire CLI
