@@ -68,8 +68,15 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
+      - name: Generate firebase config files
+        run: |
+          # Configure Firebase using FlutterFire CLI
+          flutterfire configure \
+            --project=${{ secrets.FIREBASE_PROJECT_ID }} \
+            --yes \
+            --platforms=android,web
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
 
       - name: Build APK
         run: flutter build apk --release
